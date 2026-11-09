@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fff7f2">
+  <title>Days since I last Meet Meet Bee</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #432d3b;
+      --muted: #876f7d;
+      --pink: #f5a9bd;
+      --rose: #e8799a;
+      --paper: #fffaf8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      overflow: hidden;
+      color: var(--ink);
+      background: radial-gradient(ellipse at 50% 42%, #fff 0%, #fff8f5 48%, #ffe9ee 100%);
+      font-family: ui-rounded, "Arial Rounded MT Bold", system-ui, sans-serif;
+    }
+    .card {
+      position: relative;
+      width: min(100%, 560px);
+      padding: clamp(32px, 8vw, 64px) 28px;
+      text-align: center;
+      background: rgb(255 255 255 / 78%);
+      border: 1px solid rgb(255 255 255 / 90%);
+      border-radius: 32px;
+      box-shadow: 0 24px 80px rgb(131 70 95 / 13%);
+      backdrop-filter: blur(12px);
+    }
+    .heart { color: var(--rose); font-size: 30px; animation: beat 1.5s ease-in-out infinite; }
+    h1 { margin: 16px 0 10px; font-size: clamp(1.7rem, 6vw, 2.45rem); line-height: 1.15; letter-spacing: -.04em; }
+    .subtitle { margin: 0; color: var(--muted); font-size: 1rem; }
+    .count {
+      margin: 18px 0 0;
+      color: var(--rose);
+      font-size: clamp(7rem, 34vw, 12rem);
+      font-weight: 800;
+      line-height: .98;
+      letter-spacing: -.085em;
+      font-variant-numeric: tabular-nums;
+    }
+    .unit { margin: 8px 0 28px; color: var(--muted); font-size: 1.15rem; }
+    .date-row { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: .9rem; }
+    label { font-weight: 650; }
+    input[type="date"] {
+      padding: 10px 12px;
+      color: var(--ink);
+      background: var(--paper);
+      border: 1px solid #f0d7df;
+      border-radius: 12px;
+      font: inherit;
+    }
+    .note { min-height: 1.3em; margin: 10px 0 0; color: #aa526e; font-size: .85rem; }
+    .sparkle { position: absolute; color: #f2b5c5; font-size: 22px; }
+    .one { top: 24px; left: 28px; }.two { right: 30px; bottom: 28px; font-size: 17px; }
+    @keyframes beat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.14); } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; } }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <span class="sparkle one" aria-hidden="true">✦</span>
+    <span class="sparkle two" aria-hidden="true">✧</span>
+    <div class="heart" aria-hidden="true">♥</div>
+    <h1>Days since I last Meet Meet Bee</h1>
+    <p class="subtitle">Counting the days until I see my favorite person again</p>
+    <div class="count" id="days" aria-live="polite">0</div>
+    <p class="unit" id="unit">days</p>
+    <div class="date-row">
+      <label for="last-met">The last time we met:</label>
+      <input id="last-met" type="date" aria-describedby="date-note">
+    </div>
+    <p class="note" id="date-note">Choose the date you last saw each other to start counting ♡</p>
+  </main>
+  <script>
+    const dateInput = document.querySelector('#last-met');
+    const daysOutput = document.querySelector('#days');
+    const unitOutput = document.querySelector('#unit');
+    const note = document.querySelector('#date-note');
+    const storageKey = 'meet-bee-last-met';
+
+    function updateCount() {
+      const value = dateInput.value;
+      if (!value) {
+        daysOutput.textContent = '0';
+        unitOutput.textContent = 'days';
+        note.textContent = 'Choose the date you last saw each other to start counting ♡';
+        return;
+      }
+      const [year, month, day] = value.split('-').map(Number);
+      const lastMet = Date.UTC(year, month - 1, day);
+      const today = new Date();
+      const todayUtc = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+      const difference = Math.floor((todayUtc - lastMet) / 86_400_000);
+      if (difference < 0) {
+        daysOutput.textContent = '0';
+        unitOutput.textContent = 'days';
+        note.textContent = 'That date is in the future—choose the day you last met.';
+        return;
+      }
+      daysOutput.textContent = String(difference);
+      unitOutput.textContent = difference === 1 ? 'day' : 'days';
+      note.textContent = 'Every day is one day closer to seeing you again ♡';
+      localStorage.setItem(storageKey, value);
+    }
+
+    dateInput.max = new Date().toISOString().slice(0, 10);
+    dateInput.value = localStorage.getItem(storageKey) || '';
+    dateInput.addEventListener('change', updateCount);
+    updateCount();
+  </script>
+</body>
+</html>
